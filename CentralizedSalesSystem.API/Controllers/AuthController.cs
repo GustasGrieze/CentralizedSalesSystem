@@ -1,9 +1,11 @@
 ﻿using CentralizedSalesSystem.API.Data;
+using CentralizedSalesSystem.API.Models;
 using CentralizedSalesSystem.API.Models.Auth;
 using CentralizedSalesSystem.API.Models.Auth.enums;
 using CentralizedSalesSystem.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -14,18 +16,21 @@ using System.Text;
 namespace CentralizedSalesSystem.API.Controllers
 {
     [Route("auth")]
+    [Authorize]
     [ApiController]
     public class AuthController : ControllerBase
     {
         private readonly CentralizedSalesDbContext _db;
         private readonly IConfiguration _config;
         private readonly ITokenService _tokenService;
+        private readonly IPasswordHasher<User> _passwordHasher;
 
-        public AuthController(CentralizedSalesDbContext db, IConfiguration config, ITokenService tokenService)
+        public AuthController(CentralizedSalesDbContext db, IConfiguration config, ITokenService tokenService, IPasswordHasher<User> passwordHasher)
         {
             _db = db;
             _config = config;
             _tokenService =tokenService;
+            _passwordHasher = passwordHasher;
         }
 
         [HttpPost("login")]
@@ -45,7 +50,12 @@ namespace CentralizedSalesSystem.API.Controllers
                 return Unauthorized(error_str);
             }
 
-            if(user.PasswordHash != request.Password)
+            var isCorrectPassword = _passwordHasher.VerifyHashedPassword(
+                user,
+                user.PasswordHash,
+                request.Password);
+
+            if( isCorrectPassword == PasswordVerificationResult.Failed)
             {
                 return Unauthorized(error_str);
             }
