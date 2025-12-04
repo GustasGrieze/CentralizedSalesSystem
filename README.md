@@ -13,8 +13,14 @@ For any platforms different from windows, you may choose to install the MSSQL se
 
   "DatabaseProvider": "LocalDB",
 
-  "ConnectionStrings": { //here
-    "DefaultConnection": "Server=127.0.0.1,1433;Database=CentralizedSalesDb;User Id=sa;Password=somepass;TrustServerCertificate=True;"
+  //here for windows
+  "ConnectionStrings": { 
+    "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;Database=CentralizedSalesDb;Trusted_Connection=True;MultipleActiveResultSets=true"
+  },
+
+  // or if you have mssql proper server setup, something like this:
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=127.0.0.1,1433;Database=CentralizedSalesDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"
   },
 
   "Logging": {
