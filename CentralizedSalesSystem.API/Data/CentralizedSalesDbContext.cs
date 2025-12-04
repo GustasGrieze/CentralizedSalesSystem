@@ -23,6 +23,9 @@ namespace CentralizedSalesSystem.API.Data
         public DbSet<Table> Tables { get; set; }
         public DbSet<Tax> Taxes { get; set; }
 
+        // Reservations
+        public DbSet<Reservation> Reservations { get; set; }
+
 
 
 

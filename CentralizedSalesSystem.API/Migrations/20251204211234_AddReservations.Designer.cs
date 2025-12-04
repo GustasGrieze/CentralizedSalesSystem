@@ -4,6 +4,7 @@ using CentralizedSalesSystem.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CentralizedSalesSystem.API.Migrations
 {
     [DbContext(typeof(CentralizedSalesDbContext))]
-    partial class CentralizedSalesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251204211234_AddReservations")]
+    partial class AddReservations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -221,9 +224,6 @@ namespace CentralizedSalesSystem.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<long?>("DiscountId")
-                        .HasColumnType("bigint");
-
                     b.Property<long>("ItemId")
                         .HasColumnType("bigint");
 
@@ -268,9 +268,6 @@ namespace CentralizedSalesSystem.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("OrderItemId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -278,8 +275,6 @@ namespace CentralizedSalesSystem.API.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OrderItemId");
 
                     b.ToTable("ServiceCharges");
                 });
@@ -521,13 +516,6 @@ namespace CentralizedSalesSystem.API.Migrations
                     b.Navigation("Reservation");
                 });
 
-            modelBuilder.Entity("CentralizedSalesSystem.API.Models.Orders.ServiceCharge", b =>
-                {
-                    b.HasOne("CentralizedSalesSystem.API.Models.Orders.OrderItem", null)
-                        .WithMany("ServiceCharges")
-                        .HasForeignKey("OrderItemId");
-                });
-
             modelBuilder.Entity("CentralizedSalesSystem.API.Models.Orders.Tax", b =>
                 {
                     b.HasOne("CentralizedSalesSystem.API.Models.Orders.OrderItem", null)
@@ -580,8 +568,6 @@ namespace CentralizedSalesSystem.API.Migrations
 
             modelBuilder.Entity("CentralizedSalesSystem.API.Models.Orders.OrderItem", b =>
                 {
-                    b.Navigation("ServiceCharges");
-
                     b.Navigation("Taxes");
                 });
 
