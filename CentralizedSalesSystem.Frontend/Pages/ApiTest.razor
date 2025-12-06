@@ -1,0 +1,102 @@
+@page "/api-test"
+@using System.Net.Http.Json
+@inject HttpClient ApiClient
+@inject CentralizedSalesSystem.Frontend.Services.ITokenStore TokenStore
+
+<PageTitle>API Test</PageTitle>
+
+<h3>API Connectivity & Auth Test</h3>
+
+<div class="mb-3">
+    <label class="form-label">Email</label>
+    <input class="form-control" @bind="loginEmail" />
+</div>
+<div class="mb-3">
+    <label class="form-label">Password</label>
+    <input class="form-control" type="password" @bind="loginPassword" />
+</div>
+<button class="btn btn-primary me-2" @onclick="LoginAsync">Login & Store Token</button>
+<span>@loginStatus</span>
+
+<hr />
+
+<div class="mb-2">
+    <button class="btn btn-success me-2" @onclick="CallWithAuth">GET /items (with token)</button>
+    <button class="btn btn-warning" @onclick="CallWithoutAuth">GET /items (without token)</button>
+</div>
+
+<div class="mt-3">
+    <h5>Latest Result</h5>
+    <pre>@latestResult</pre>
+</div>
+
+@code {
+    private string loginEmail = "admin@ex.com";
+    private string loginPassword = "pass";
+    private string? loginStatus;
+    private string? latestResult;
+
+    private async Task LoginAsync()
+    {
+        loginStatus = "Logging in...";
+        latestResult = null;
+
+        try
+        {
+            var response = await ApiClient.PostAsJsonAsync("auth/login", new LoginRequest(loginEmail, loginPassword));
+            if (!response.IsSuccessStatusCode)
+            {
+                loginStatus = $"Login failed: {(int)response.StatusCode} {response.ReasonPhrase}";
+                return;
+            }
+
+            var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
+            if (tokenResponse?.AccessToken is null)
+            {
+                loginStatus = "Login succeeded but token was missing.";
+                return;
+            }
+
+            await TokenStore.SetTokenAsync(tokenResponse.AccessToken);
+            loginStatus = "Login succeeded and token stored.";
+        }
+        catch (Exception ex)
+        {
+            loginStatus = $"Login error: {ex.Message}";
+        }
+    }
+
+    private async Task CallWithAuth()
+    {
+        latestResult = await CallItemsAsync(clearTokenFirst: false);
+    }
+
+    private async Task CallWithoutAuth()
+    {
+        // Clear stored token so the handler won't attach a bearer header.
+        await TokenStore.ClearTokenAsync();
+        latestResult = await CallItemsAsync(clearTokenFirst: false);
+    }
+
+    private async Task<string> CallItemsAsync(bool clearTokenFirst)
+    {
+        try
+        {
+            if (clearTokenFirst)
+            {
+                await TokenStore.ClearTokenAsync();
+            }
+
+            var response = await ApiClient.GetAsync("items");
+            var body = await response.Content.ReadAsStringAsync();
+            return $"Status: {(int)response.StatusCode} {response.ReasonPhrase}\n\n{body}";
+        }
+        catch (Exception ex)
+        {
+            return $"Error: {ex.Message}";
+        }
+    }
+
+    private record LoginRequest(string Email, string Password);
+    private record TokenResponse(string AccessToken);
+}
