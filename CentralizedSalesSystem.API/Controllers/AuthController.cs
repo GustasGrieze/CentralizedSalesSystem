@@ -35,7 +35,7 @@ namespace CentralizedSalesSystem.API.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
+        public async Task<ActionResult<TokenResponse>> Login([FromBody] LoginRequest request)
         {
             var user = await _db.Users
                 .Include(u => u.UserRoles)
@@ -47,7 +47,7 @@ namespace CentralizedSalesSystem.API.Controllers
             var error_str = "Invalid email or password";
             if (user == null)
             {
-                return Unauthorized(error_str);
+                return Unauthorized(new { code = "invalid_credentials", message = error_str });
             }
 
             var isCorrectPassword = _passwordHasher.VerifyHashedPassword(
@@ -57,7 +57,7 @@ namespace CentralizedSalesSystem.API.Controllers
 
             if( isCorrectPassword == PasswordVerificationResult.Failed)
             {
-                return Unauthorized(error_str);
+                return Unauthorized(new { code = "invalid_credentials", message = error_str });
             }
 
             var activeRoles = user.UserRoles
@@ -79,7 +79,7 @@ namespace CentralizedSalesSystem.API.Controllers
 
             var token = _tokenService.GenerateAccessToken(user);
 
-            return Ok(new LoginResponse(token));
+            return Ok(new TokenResponse(token));
 
         }
 

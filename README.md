@@ -39,3 +39,22 @@ For any platforms different from windows, you may choose to install the MSSQL se
 To test the endpoints in a manual way, before we have adjusted the authorization, make sure to comment `[Authorize]` annotations on controller. DO NOT REMOVE THEM FROM THE REPO CODE!
 
 Before we can write integration tests, we'll have to wait for the authorization to be fixed
+
+## Testing part 2
+Hit the login enpoint with
+
+```
+
+{
+
+&nbsp; "email": "admin@ex.com",
+
+&nbsp; "password": "pass"
+
+}
+
+```
+
+to obtain the jwt token. 
+
+Then add into the authorize input as just the raw token with strings and numbers eyJhbGciOiJIUzI1NiIsIn.... ect

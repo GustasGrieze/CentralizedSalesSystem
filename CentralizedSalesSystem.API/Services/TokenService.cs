@@ -22,8 +22,11 @@ namespace CentralizedSalesSystem.API.Services
         public string GenerateAccessToken(User user)
         {
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+                Encoding.UTF8.GetBytes(_config["JWT:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var expiryMinutes = int.TryParse(_config["JWT:ExpiryMinutes"], out var minutes)
+                ? minutes
+                : 60;
 
             var claims = new List<Claim>
             {
@@ -43,11 +46,11 @@ namespace CentralizedSalesSystem.API.Services
             }
 
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
+                issuer: _config["JWT:Issuer"],
+                audience: _config["JWT:Audience"],
                 claims: claims,
                 notBefore: DateTime.UtcNow,
-                expires: DateTime.UtcNow.AddMinutes(60), // expiration can be changed 
+                expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
                 signingCredentials: creds
             );
 
